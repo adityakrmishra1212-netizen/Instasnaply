@@ -1,0 +1,841 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+<title>soc·ial — Social App</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#0a0a0f;
+  --surface:#111118;
+  --surface2:#1a1a24;
+  --surface3:#22222f;
+  --border:rgba(255,255,255,0.07);
+  --border2:rgba(255,255,255,0.13);
+  --accent:#7c6af7;
+  --accent2:#5eead4;
+  --accent3:#f472b6;
+  --text:#f0eff8;
+  --muted:#7e7d9a;
+  --muted2:#4a4a62;
+  --radius:16px;
+  --radius-sm:10px;
+  --font:'Sora',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+html,body{height:100%;background:#000;display:flex;justify-content:center;align-items:flex-start;font-family:var(--font);color:var(--text);-webkit-font-smoothing:antialiased}
+
+.shell{
+  width:100%;max-width:430px;min-height:100vh;
+  background:var(--bg);
+  display:flex;flex-direction:column;
+  position:relative;overflow:hidden;
+  box-shadow:0 0 80px rgba(124,106,247,0.12);
+}
+
+/* ── HEADER ── */
+.header{
+  padding:18px 20px 12px;
+  display:flex;align-items:center;justify-content:space-between;
+  position:sticky;top:0;z-index:50;
+  background:linear-gradient(to bottom,rgba(10,10,15,0.97) 80%,transparent);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+}
+.header-logo{font-size:20px;font-weight:700;letter-spacing:-0.5px}
+.header-logo span{color:var(--accent)}
+.header-actions{display:flex;gap:8px}
+.icon-btn{
+  width:36px;height:36px;border-radius:50%;
+  background:var(--surface2);border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;transition:all .18s;font-size:15px;user-select:none;
+}
+.icon-btn:hover{background:var(--surface3);border-color:var(--border2);transform:scale(1.05)}
+.icon-btn:active{transform:scale(0.95)}
+
+/* ── SCREENS ── */
+.screen{display:none;flex-direction:column;flex:1;overflow:hidden;animation:screenIn .22s ease}
+.screen.active{display:flex}
+@keyframes screenIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SCROLLABLE AREA ── */
+.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:76px;scrollbar-width:none}
+.scroll-area::-webkit-scrollbar{display:none}
+
+/* ── STORIES ── */
+.stories-wrap{padding:14px 20px;display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.stories-wrap::-webkit-scrollbar{display:none}
+.story{display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;flex-shrink:0}
+.story-ring{
+  width:60px;height:60px;border-radius:50%;
+  background:linear-gradient(135deg,var(--accent),var(--accent3));
+  padding:2.5px;display:flex;align-items:center;justify-content:center;
+  transition:transform .18s;
+}
+.story:hover .story-ring{transform:scale(1.06)}
+.story:active .story-ring{transform:scale(0.95)}
+.story-ring.seen{background:var(--surface3)}
+.story-ring.add-ring{background:var(--surface2);border:1.5px dashed var(--muted2)}
+.story-inner{
+  width:53px;height:53px;border-radius:50%;
+  background:var(--surface2);border:2.5px solid var(--bg);
+  display:flex;align-items:center;justify-content:center;font-size:22px;
+}
+.story-name{font-size:11px;color:var(--muted);max-width:62px;text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* ── FILTER PILLS ── */
+.pill-row{display:flex;gap:7px;padding:0 20px 14px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.pill-row::-webkit-scrollbar{display:none}
+.pill{
+  padding:7px 16px;border-radius:20px;font-size:12.5px;font-weight:500;
+  cursor:pointer;transition:all .18s;border:1px solid transparent;white-space:nowrap;user-select:none;
+}
+.pill.active{background:var(--accent);color:#fff;box-shadow:0 2px 14px rgba(124,106,247,0.35)}
+.pill:not(.active){background:var(--surface2);color:var(--muted);border-color:var(--border)}
+.pill:not(.active):hover{border-color:var(--border2);color:var(--text)}
+
+/* ── SECTION HEADER ── */
+.sec-header{display:flex;align-items:center;justify-content:space-between;padding:4px 20px 12px}
+.sec-title{font-size:15px;font-weight:700;letter-spacing:-0.3px}
+.sec-action{font-size:12.5px;color:var(--accent);cursor:pointer;font-weight:500}
+
+/* ── SUGGESTED FRIENDS ── */
+.friends-row{display:flex;gap:10px;padding:0 20px 16px;overflow-x:auto;scrollbar-width:none;flex-shrink:0}
+.friends-row::-webkit-scrollbar{display:none}
+.friend-chip{
+  display:flex;flex-direction:column;align-items:center;gap:5px;
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:14px 12px;min-width:92px;cursor:pointer;transition:all .18s;flex-shrink:0;
+}
+.friend-chip:hover{border-color:var(--border2);background:var(--surface2);transform:translateY(-2px)}
+.friend-chip-av{font-size:26px}
+.friend-chip-name{font-size:12px;font-weight:600;text-align:center;line-height:1.3}
+.friend-chip-mut{font-size:11px;color:var(--muted);text-align:center}
+.add-btn{
+  margin-top:4px;padding:5px 12px;border-radius:7px;
+  background:var(--accent);color:#fff;font-size:11px;font-weight:600;
+  border:none;cursor:pointer;font-family:var(--font);transition:all .18s;
+}
+.add-btn:hover{background:#6a58e0}
+.add-btn.added{background:var(--surface3);color:var(--muted);cursor:default}
+
+/* ── POSTS ── */
+.post{padding:16px 20px;border-bottom:1px solid var(--border);animation:fadeUp .28s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.post-header{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.avatar{
+  width:42px;height:42px;border-radius:50%;flex-shrink:0;
+  background:var(--surface3);display:flex;align-items:center;justify-content:center;
+  font-size:20px;border:1.5px solid var(--border2);
+}
+.post-meta{flex:1}
+.post-name{font-size:14px;font-weight:600}
+.post-time{font-size:11.5px;color:var(--muted);margin-top:1px}
+.post-more{color:var(--muted);cursor:pointer;font-size:20px;line-height:1;padding:4px;user-select:none}
+.post-body{font-size:14px;line-height:1.7;color:rgba(240,239,248,0.82);margin-bottom:13px}
+.post-body .tag{color:var(--accent);cursor:pointer}
+.post-body .tag:hover{text-decoration:underline}
+.post-media{
+  border-radius:var(--radius-sm);margin-bottom:13px;
+  background:var(--surface2);aspect-ratio:16/9;
+  display:flex;align-items:center;justify-content:center;font-size:42px;
+  border:1px solid var(--border);
+}
+.post-actions{display:flex;align-items:center;gap:7px}
+.act-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:7px 13px;border-radius:20px;
+  background:var(--surface2);border:1px solid var(--border);
+  font-size:12px;font-weight:500;color:var(--muted);
+  cursor:pointer;transition:all .18s;user-select:none;
+}
+.act-btn:hover{border-color:var(--border2);color:var(--text)}
+.act-btn.liked{background:rgba(244,114,182,0.1);border-color:rgba(244,114,182,0.3);color:var(--accent3)}
+.act-btn.liked .ai{animation:heartPop .28s ease}
+@keyframes heartPop{0%{transform:scale(1)}50%{transform:scale(1.5)}100%{transform:scale(1)}}
+.ai{font-size:14px}
+.act-btn.ml{margin-left:auto}
+
+/* ── CHAT ── */
+.search-bar{
+  margin:12px 20px;background:var(--surface2);border:1px solid var(--border);
+  border-radius:var(--radius-sm);display:flex;align-items:center;gap:8px;padding:10px 14px;
+}
+.search-bar input{background:transparent;border:none;outline:none;font-size:14px;color:var(--text);font-family:var(--font);flex:1}
+.search-bar input::placeholder{color:var(--muted)}
+.chat-item{
+  display:flex;align-items:center;gap:12px;padding:14px 20px;
+  cursor:pointer;transition:background .15s;
+}
+.chat-item:hover{background:var(--surface2)}
+.chat-item:active{background:var(--surface3)}
+.chat-av{
+  width:50px;height:50px;border-radius:50%;flex-shrink:0;
+  background:var(--surface3);display:flex;align-items:center;justify-content:center;
+  font-size:23px;border:1.5px solid var(--border);position:relative;
+}
+.online{
+  position:absolute;bottom:1px;right:1px;width:13px;height:13px;
+  border-radius:50%;background:#22c55e;border:2.5px solid var(--bg);
+}
+.chat-info{flex:1;min-width:0}
+.chat-name{font-size:14px;font-weight:600;margin-bottom:3px}
+.chat-prev{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chat-meta{display:flex;flex-direction:column;align-items:flex-end;gap:5px}
+.chat-time{font-size:11px;color:var(--muted2)}
+.badge{
+  background:var(--accent);color:#fff;font-size:11px;font-weight:600;
+  min-width:19px;height:19px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;padding:0 5px;
+}
+
+/* ── GROUPS ── */
+.groups-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:4px 20px 16px}
+.group-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:16px;cursor:pointer;transition:all .2s;
+}
+.group-card:hover{border-color:var(--border2);background:var(--surface2);transform:translateY(-2px)}
+.group-card:active{transform:translateY(0)}
+.group-em{font-size:30px;margin-bottom:10px}
+.group-name{font-size:13.5px;font-weight:600;margin-bottom:4px;line-height:1.3}
+.group-mem{font-size:11.5px;color:var(--muted);margin-bottom:12px}
+.group-btn{
+  width:100%;padding:8px;border-radius:8px;font-size:12px;font-weight:600;
+  border:1px solid var(--border2);background:transparent;color:var(--muted);
+  cursor:pointer;font-family:var(--font);transition:all .2s;
+}
+.group-btn.joined{background:var(--accent);border-color:var(--accent);color:#fff}
+.group-btn:not(.joined):hover{background:var(--surface3);color:var(--text)}
+
+/* ── PROFILE ── */
+.profile-banner{
+  height:130px;flex-shrink:0;
+  background:linear-gradient(135deg,#1e1340 0%,#2d1f5e 50%,#1a2a3a 100%);
+  position:relative;overflow:hidden;
+}
+.profile-banner::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 70% 50%,rgba(124,106,247,0.35) 0%,transparent 70%);
+}
+.profile-banner::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 20% 80%,rgba(244,114,182,0.15) 0%,transparent 60%);
+}
+.pav-wrap{position:relative;display:inline-block;margin:-38px 0 0 20px;z-index:2}
+.pav{
+  width:76px;height:76px;border-radius:50%;
+  background:var(--surface2);font-size:34px;
+  display:flex;align-items:center;justify-content:center;
+  border:3.5px solid var(--bg);
+}
+.pav-edit{
+  position:absolute;bottom:0;right:0;
+  width:24px;height:24px;border-radius:50%;
+  background:var(--accent);color:#fff;font-size:11px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;border:2.5px solid var(--bg);
+}
+.profile-info{padding:12px 20px 20px}
+.p-name{font-size:21px;font-weight:700;letter-spacing:-0.4px}
+.p-handle{font-size:13px;color:var(--muted);margin-bottom:10px;font-family:var(--mono)}
+.p-bio{font-size:13.5px;line-height:1.65;color:rgba(240,239,248,0.72);margin-bottom:18px}
+.p-stats{display:flex;gap:26px;margin-bottom:20px}
+.stat{cursor:pointer}
+.stat-n{font-size:19px;font-weight:700;letter-spacing:-0.5px}
+.stat-l{font-size:11.5px;color:var(--muted)}
+.p-actions{display:flex;gap:10px;margin-bottom:24px}
+.btn-p{
+  flex:1;padding:11px;border-radius:10px;
+  background:var(--accent);color:#fff;font-size:13.5px;font-weight:600;
+  border:none;cursor:pointer;font-family:var(--font);transition:all .18s;
+}
+.btn-p:hover{background:#6a58e0}
+.btn-o{
+  padding:11px 18px;border-radius:10px;
+  background:transparent;color:var(--text);font-size:13.5px;font-weight:500;
+  border:1px solid var(--border2);cursor:pointer;font-family:var(--font);transition:all .18s;
+}
+.btn-o:hover{background:var(--surface2)}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.pgrid-item{
+  aspect-ratio:1;background:var(--surface2);
+  display:flex;align-items:center;justify-content:center;font-size:30px;
+  cursor:pointer;transition:opacity .18s;
+}
+.pgrid-item:hover{opacity:.7}
+
+/* ── TAB BAR ── */
+.tab-bar{
+  display:flex;align-items:center;justify-content:space-around;
+  padding:10px 8px 18px;
+  background:linear-gradient(to top,rgba(10,10,15,0.98) 60%,transparent);
+  backdrop-filter:blur(18px);
+  border-top:1px solid var(--border);
+  flex-shrink:0;
+  position:relative;z-index:100;
+}
+.tab-item{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  padding:6px 14px;border-radius:12px;cursor:pointer;
+  transition:all .18s;flex:1;user-select:none;
+}
+.tab-item:hover{background:var(--surface2)}
+.tab-icon{font-size:21px;transition:transform .2s;position:relative}
+.tab-item.active .tab-icon{filter:drop-shadow(0 0 7px var(--accent))}
+.tab-item:hover .tab-icon{transform:scale(1.1)}
+.tab-label{font-size:10px;font-weight:500;color:var(--muted);transition:color .18s}
+.tab-item.active .tab-label{color:var(--accent)}
+.notif-dot{
+  position:absolute;top:-3px;right:-4px;
+  width:8px;height:8px;border-radius:50%;
+  background:var(--accent3);border:1.5px solid var(--bg);
+}
+
+/* ── FAB ── */
+.fab{
+  position:fixed;bottom:88px;right:calc(50% - 215px + 16px);
+  width:54px;height:54px;border-radius:50%;
+  background:var(--accent);color:#fff;font-size:22px;
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;box-shadow:0 4px 24px rgba(124,106,247,0.45);
+  transition:all .2s;z-index:60;border:none;font-family:var(--font);
+}
+@media(max-width:430px){.fab{right:16px}}
+.fab:hover{transform:scale(1.08);box-shadow:0 6px 32px rgba(124,106,247,0.55)}
+.fab:active{transform:scale(0.94)}
+.fab.hidden{display:none}
+
+/* ── DIVIDER ── */
+.divider{height:1px;background:var(--border);margin:0 20px}
+
+/* ── TOAST ── */
+.toast{
+  position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--surface3);border:1px solid var(--border2);
+  color:var(--text);font-size:13px;font-weight:500;
+  padding:10px 20px;border-radius:20px;
+  opacity:0;transition:all .3s;pointer-events:none;z-index:200;white-space:nowrap;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <!-- ═══════════════════════════════ FEED ═══════════════════════════════ -->
+  <div id="s-feed" class="screen active">
+    <div class="header">
+      <div class="header-logo">soc<span>·</span>ial</div>
+      <div class="header-actions">
+        <div class="icon-btn" onclick="showToast('Search coming soon!')">🔍</div>
+        <div class="icon-btn" onclick="showToast('No new notifications')">🔔</div>
+      </div>
+    </div>
+    <div class="scroll-area">
+      <!-- Stories -->
+      <div class="stories-wrap">
+        <div class="story">
+          <div class="story-ring add-ring"><div class="story-inner">➕</div></div>
+          <span class="story-name">Your story</span>
+        </div>
+        <div class="story" onclick="showToast('Alex\'s story')">
+          <div class="story-ring"><div class="story-inner">🧑‍🎨</div></div>
+          <span class="story-name">Alex</span>
+        </div>
+        <div class="story" onclick="showToast('Priya\'s story')">
+          <div class="story-ring"><div class="story-inner">👩‍💻</div></div>
+          <span class="story-name">Priya</span>
+        </div>
+        <div class="story" onclick="showToast('Leo\'s story')">
+          <div class="story-ring seen"><div class="story-inner">🧑‍🚀</div></div>
+          <span class="story-name">Leo</span>
+        </div>
+        <div class="story" onclick="showToast('Sara\'s story')">
+          <div class="story-ring"><div class="story-inner">👩‍🎤</div></div>
+          <span class="story-name">Sara</span>
+        </div>
+        <div class="story" onclick="showToast('Rahul\'s story')">
+          <div class="story-ring seen"><div class="story-inner">🧑‍🍳</div></div>
+          <span class="story-name">Rahul</span>
+        </div>
+        <div class="story" onclick="showToast('Neha\'s story')">
+          <div class="story-ring"><div class="story-inner">👩‍🔬</div></div>
+          <span class="story-name">Neha</span>
+        </div>
+      </div>
+
+      <!-- Feed filters -->
+      <div class="pill-row">
+        <div class="pill active" onclick="setPill(this)">For you</div>
+        <div class="pill" onclick="setPill(this)">Following</div>
+        <div class="pill" onclick="setPill(this)">Groups</div>
+        <div class="pill" onclick="setPill(this)">Trending</div>
+        <div class="pill" onclick="setPill(this)">Nearby</div>
+      </div>
+
+      <!-- Suggested friends -->
+      <div class="sec-header">
+        <span class="sec-title">People you may know</span>
+        <span class="sec-action" onclick="showToast('Opening people search...')">See all</span>
+      </div>
+      <div class="friends-row">
+        <div class="friend-chip">
+          <div class="friend-chip-av">👩‍🔬</div>
+          <div class="friend-chip-name">Neha S.</div>
+          <div class="friend-chip-mut">3 mutual</div>
+          <button class="add-btn" onclick="addFriend(this)">+ Add</button>
+        </div>
+        <div class="friend-chip">
+          <div class="friend-chip-av">🧑‍💼</div>
+          <div class="friend-chip-name">Arjun M.</div>
+          <div class="friend-chip-mut">7 mutual</div>
+          <button class="add-btn" onclick="addFriend(this)">+ Add</button>
+        </div>
+        <div class="friend-chip">
+          <div class="friend-chip-av">👨‍🎨</div>
+          <div class="friend-chip-name">Dev R.</div>
+          <div class="friend-chip-mut">2 mutual</div>
+          <button class="add-btn" onclick="addFriend(this)">+ Add</button>
+        </div>
+        <div class="friend-chip">
+          <div class="friend-chip-av">👩‍🏫</div>
+          <div class="friend-chip-name">Riya K.</div>
+          <div class="friend-chip-mut">5 mutual</div>
+          <button class="add-btn" onclick="addFriend(this)">+ Add</button>
+        </div>
+        <div class="friend-chip">
+          <div class="friend-chip-av">🧑‍🎤</div>
+          <div class="friend-chip-name">Karan V.</div>
+          <div class="friend-chip-mut">1 mutual</div>
+          <button class="add-btn" onclick="addFriend(this)">+ Add</button>
+        </div>
+      </div>
+
+      <!-- Posts -->
+      <div class="post" style="animation-delay:.04s">
+        <div class="post-header">
+          <div class="avatar">🧑‍🎨</div>
+          <div class="post-meta">
+            <div class="post-name">Alex Rivera</div>
+            <div class="post-time">2 min ago · 🌍 Public</div>
+          </div>
+          <div class="post-more">···</div>
+        </div>
+        <div class="post-body">Just shipped the redesign for our app! 🎉 Took 3 weeks but honestly super proud of how clean it looks now. Swipe to see before/after! <span class="tag">#design</span> <span class="tag">#ux</span> <span class="tag">#shipped</span></div>
+        <div class="post-media">🎨</div>
+        <div class="post-actions">
+          <div class="act-btn liked" onclick="toggleLike(this)"><span class="ai">❤️</span><span class="cnt">142</span></div>
+          <div class="act-btn" onclick="showToast('Comments opened')"><span class="ai">💬</span> 38</div>
+          <div class="act-btn ml" onclick="showToast('Link copied!')"><span class="ai">↗️</span></div>
+        </div>
+      </div>
+
+      <div class="post" style="animation-delay:.08s">
+        <div class="post-header">
+          <div class="avatar">👩‍💻</div>
+          <div class="post-meta">
+            <div class="post-name">Priya Nair</div>
+            <div class="post-time">18 min ago · 🌍 Public</div>
+          </div>
+          <div class="post-more">···</div>
+        </div>
+        <div class="post-body">Hot take: most devs overcomplicate state management. In 90% of apps, useState + context is genuinely all you need. Fight me 🔥<br><br>What do you actually use? <span class="tag">#react</span> <span class="tag">#webdev</span> <span class="tag">#javascript</span></div>
+        <div class="post-actions">
+          <div class="act-btn" onclick="toggleLike(this)"><span class="ai">🤍</span><span class="cnt">89</span></div>
+          <div class="act-btn" onclick="showToast('Comments opened')"><span class="ai">💬</span> 61</div>
+          <div class="act-btn ml" onclick="showToast('Link copied!')"><span class="ai">↗️</span></div>
+        </div>
+      </div>
+
+      <div class="post" style="animation-delay:.12s">
+        <div class="post-header">
+          <div class="avatar">🧑‍🚀</div>
+          <div class="post-meta">
+            <div class="post-name">Leo Park</div>
+            <div class="post-time">1 hour ago · 👥 Friends</div>
+          </div>
+          <div class="post-more">···</div>
+        </div>
+        <div class="post-body">Morning run done ✅ 8km in 42 mins — new personal best! The city at 6am is something else entirely 🌄 <span class="tag">#running</span> <span class="tag">#fitness</span></div>
+        <div class="post-media">🌅</div>
+        <div class="post-actions">
+          <div class="act-btn" onclick="toggleLike(this)"><span class="ai">🤍</span><span class="cnt">204</span></div>
+          <div class="act-btn" onclick="showToast('Comments opened')"><span class="ai">💬</span> 19</div>
+          <div class="act-btn ml" onclick="showToast('Link copied!')"><span class="ai">↗️</span></div>
+        </div>
+      </div>
+
+      <div class="post" style="animation-delay:.16s">
+        <div class="post-header">
+          <div class="avatar">👩‍🎤</div>
+          <div class="post-meta">
+            <div class="post-name">Sara Kim</div>
+            <div class="post-time">3 hours ago · 🌍 Public</div>
+          </div>
+          <div class="post-more">···</div>
+        </div>
+        <div class="post-body">Finally finished Atomic Habits for the 2nd time. It hits different when you actually have habits you're trying to break. Highly recommend 📖<br><br>What's the best book you've read this year?</div>
+        <div class="post-actions">
+          <div class="act-btn liked" onclick="toggleLike(this)"><span class="ai">❤️</span><span class="cnt">317</span></div>
+          <div class="act-btn" onclick="showToast('Comments opened')"><span class="ai">💬</span> 94</div>
+          <div class="act-btn ml" onclick="showToast('Link copied!')"><span class="ai">↗️</span></div>
+        </div>
+      </div>
+
+      <div class="post" style="animation-delay:.20s">
+        <div class="post-header">
+          <div class="avatar">🧑‍🍳</div>
+          <div class="post-meta">
+            <div class="post-name">Rahul Desai</div>
+            <div class="post-time">5 hours ago · 🌍 Public</div>
+          </div>
+          <div class="post-more">···</div>
+        </div>
+        <div class="post-body">Made butter chicken from scratch for the first time and honestly it turned out better than most restaurants 🍛 Recipe in the comments! <span class="tag">#cooking</span> <span class="tag">#food</span></div>
+        <div class="post-media">🍛</div>
+        <div class="post-actions">
+          <div class="act-btn" onclick="toggleLike(this)"><span class="ai">🤍</span><span class="cnt">511</span></div>
+          <div class="act-btn" onclick="showToast('Comments opened')"><span class="ai">💬</span> 127</div>
+          <div class="act-btn ml" onclick="showToast('Link copied!')"><span class="ai">↗️</span></div>
+        </div>
+      </div>
+    </div>
+    <button class="fab" id="fab-feed" onclick="showToast('Create post — coming soon!')">✏️</button>
+  </div>
+
+  <!-- ═══════════════════════════════ MESSAGES ═══════════════════════════════ -->
+  <div id="s-messages" class="screen">
+    <div class="header">
+      <div class="header-logo">Messages</div>
+      <div class="header-actions">
+        <div class="icon-btn" onclick="showToast('New message')">✏️</div>
+      </div>
+    </div>
+    <div class="scroll-area">
+      <div class="search-bar">
+        <span style="font-size:14px;color:var(--muted)">🔍</span>
+        <input placeholder="Search conversations…" />
+      </div>
+      <!-- Active now -->
+      <div class="sec-header"><span class="sec-title">Active now</span></div>
+      <div class="stories-wrap" style="padding-top:0">
+        <div class="story" onclick="showToast('Chat with Alex opened')">
+          <div class="story-ring"><div class="story-inner" style="font-size:19px">🧑‍🎨</div></div>
+          <span class="story-name">Alex</span>
+        </div>
+        <div class="story" onclick="showToast('Chat with Sara opened')">
+          <div class="story-ring"><div class="story-inner" style="font-size:19px">👩‍🎤</div></div>
+          <span class="story-name">Sara</span>
+        </div>
+        <div class="story" onclick="showToast('Chat with Priya opened')">
+          <div class="story-ring seen"><div class="story-inner" style="font-size:19px">👩‍💻</div></div>
+          <span class="story-name">Priya</span>
+        </div>
+        <div class="story" onclick="showToast('Chat with Rahul opened')">
+          <div class="story-ring seen"><div class="story-inner" style="font-size:19px">🧑‍🍳</div></div>
+          <span class="story-name">Rahul</span>
+        </div>
+      </div>
+      <div class="sec-header"><span class="sec-title">All messages</span></div>
+      <div class="divider"></div>
+
+      <div class="chat-item" onclick="showToast('Chat with Alex Rivera')">
+        <div class="chat-av">🧑‍🎨<div class="online"></div></div>
+        <div class="chat-info">
+          <div class="chat-name">Alex Rivera</div>
+          <div class="chat-prev">omg did you see the new figma update? 🔥</div>
+        </div>
+        <div class="chat-meta"><span class="chat-time">2m</span><span class="badge">3</span></div>
+      </div>
+      <div class="chat-item" onclick="showToast('Chat with Priya Nair')">
+        <div class="chat-av">👩‍💻</div>
+        <div class="chat-info">
+          <div class="chat-name">Priya Nair</div>
+          <div class="chat-prev">You: lol fair point about zustand 😅</div>
+        </div>
+        <div class="chat-meta"><span class="chat-time">18m</span></div>
+      </div>
+      <div class="chat-item" onclick="showToast('Design Club group chat')">
+        <div class="chat-av">🎨</div>
+        <div class="chat-info">
+          <div class="chat-name">Design Club 🎨</div>
+          <div class="chat-prev">Leo: anyone coming to the meetup tmrw?</div>
+        </div>
+        <div class="chat-meta"><span class="chat-time">1h</span><span class="badge">12</span></div>
+      </div>
+      <div class="chat-item" onclick="showToast('Chat with Sara Kim')">
+        <div class="chat-av">👩‍🎤<div class="online"></div></div>
+        <div class="chat-info">
+          <div class="chat-name">Sara Kim</div>
+          <div class="chat-prev">okay I'll definitely check out that book!</div>
+        </div>
+        <div class="chat-meta"><span class="chat-time">3h</span></div>
+      </div>
+      <div class="chat-item" onclick="showToast('Chat with Leo Park')">
+        <div class="chat-av">🧑‍🚀</div>
+        <div class="chat-info">
+          <div class="chat-name">Leo Park</div>
+          <div class="chat-prev">You: great run! let's go next week 🏃</div>
+        </div>
+        <div class="chat-meta"><span class="chat-time">Yesterday</span></div>
+      </div>
+      <div class="chat-item" onclick="showToast('Chat with Rahul Desai')">
+        <div class="chat-av">🧑‍🍳</div>
+        <div class="chat-info">
+          <div class="chat-name">Rahul Desai</div>
+          <div class="chat-prev">I'll share the recipe later! 🍛</div>
+        </div>
+        <div class="chat-meta"><span class="chat-time">Yesterday</span></div>
+      </div>
+      <div class="chat-item" onclick="showToast('Chat with Neha Singh')">
+        <div class="chat-av">👩‍🔬</div>
+        <div class="chat-info">
+          <div class="chat-name">Neha Singh</div>
+          <div class="chat-prev">Thanks for the recommendation! 🙏</div>
+        </div>
+        <div class="chat-meta"><span class="chat-time">Mon</span></div>
+      </div>
+    </div>
+    <button class="fab hidden" id="fab-msg" onclick="showToast('New conversation')">✏️</button>
+  </div>
+
+  <!-- ═══════════════════════════════ GROUPS ═══════════════════════════════ -->
+  <div id="s-groups" class="screen">
+    <div class="header">
+      <div class="header-logo">Groups</div>
+      <div class="header-actions">
+        <div class="icon-btn" onclick="showToast('Create a group')">➕</div>
+      </div>
+    </div>
+    <div class="scroll-area">
+      <div class="search-bar">
+        <span style="font-size:14px;color:var(--muted)">🔍</span>
+        <input placeholder="Find a group…" />
+      </div>
+      <div class="pill-row">
+        <div class="pill active" onclick="setPill(this)">All</div>
+        <div class="pill" onclick="setPill(this)">My groups</div>
+        <div class="pill" onclick="setPill(this)">Suggested</div>
+        <div class="pill" onclick="setPill(this)">Local</div>
+      </div>
+      <div class="sec-header">
+        <span class="sec-title">Discover groups</span>
+        <span class="sec-action" onclick="showToast('Browsing all groups…')">Browse all</span>
+      </div>
+      <div class="groups-grid">
+        <div class="group-card">
+          <div class="group-em">🎨</div>
+          <div class="group-name">Design Club</div>
+          <div class="group-mem">2.4k members</div>
+          <button class="group-btn joined" onclick="toggleJoin(this)">✓ Joined</button>
+        </div>
+        <div class="group-card">
+          <div class="group-em">💻</div>
+          <div class="group-name">Indie Hackers</div>
+          <div class="group-mem">8.1k members</div>
+          <button class="group-btn" onclick="toggleJoin(this)">+ Join</button>
+        </div>
+        <div class="group-card">
+          <div class="group-em">📚</div>
+          <div class="group-name">Book Club</div>
+          <div class="group-mem">1.2k members</div>
+          <button class="group-btn joined" onclick="toggleJoin(this)">✓ Joined</button>
+        </div>
+        <div class="group-card">
+          <div class="group-em">🏃</div>
+          <div class="group-name">Morning Runners</div>
+          <div class="group-mem">567 members</div>
+          <button class="group-btn" onclick="toggleJoin(this)">+ Join</button>
+        </div>
+        <div class="group-card">
+          <div class="group-em">🎵</div>
+          <div class="group-name">Music Lovers</div>
+          <div class="group-mem">5.7k members</div>
+          <button class="group-btn" onclick="toggleJoin(this)">+ Join</button>
+        </div>
+        <div class="group-card">
+          <div class="group-em">🌱</div>
+          <div class="group-name">Sustainability</div>
+          <div class="group-mem">3.3k members</div>
+          <button class="group-btn" onclick="toggleJoin(this)">+ Join</button>
+        </div>
+        <div class="group-card">
+          <div class="group-em">📸</div>
+          <div class="group-name">Photography</div>
+          <div class="group-mem">11k members</div>
+          <button class="group-btn" onclick="toggleJoin(this)">+ Join</button>
+        </div>
+        <div class="group-card">
+          <div class="group-em">🍜</div>
+          <div class="group-name">Foodies</div>
+          <div class="group-mem">4.8k members</div>
+          <button class="group-btn joined" onclick="toggleJoin(this)">✓ Joined</button>
+        </div>
+        <div class="group-card">
+          <div class="group-em">🧘</div>
+          <div class="group-name">Mindfulness</div>
+          <div class="group-mem">2.1k members</div>
+          <button class="group-btn" onclick="toggleJoin(this)">+ Join</button>
+        </div>
+        <div class="group-card">
+          <div class="group-em">✈️</div>
+          <div class="group-name">Travel Diaries</div>
+          <div class="group-mem">18k members</div>
+          <button class="group-btn" onclick="toggleJoin(this)">+ Join</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ PROFILE ═══════════════════════════════ -->
+  <div id="s-profile" class="screen">
+    <div class="header">
+      <div class="header-logo">Profile</div>
+      <div class="header-actions">
+        <div class="icon-btn" onclick="showToast('Settings')">⚙️</div>
+        <div class="icon-btn" onclick="showToast('More options')">···</div>
+      </div>
+    </div>
+    <div class="scroll-area">
+      <div class="profile-banner"></div>
+      <div class="pav-wrap">
+        <div class="pav">😊</div>
+        <div class="pav-edit" onclick="showToast('Change profile photo')">✏️</div>
+      </div>
+      <div class="profile-info">
+        <div class="p-name">You</div>
+        <div class="p-handle">@yourhandle</div>
+        <div class="p-bio">Building cool things on the internet 🚀 · Design &amp; code enthusiast · Ranchi, India 🇮🇳</div>
+        <div class="p-stats">
+          <div class="stat" onclick="showToast('248 posts')">
+            <div class="stat-n">248</div><div class="stat-l">Posts</div>
+          </div>
+          <div class="stat" onclick="showToast('1,400 friends')">
+            <div class="stat-n">1.4k</div><div class="stat-l">Friends</div>
+          </div>
+          <div class="stat" onclick="showToast('892 following')">
+            <div class="stat-n">892</div><div class="stat-l">Following</div>
+          </div>
+        </div>
+        <div class="p-actions">
+          <button class="btn-p" onclick="showToast('Editing profile…')">Edit Profile</button>
+          <button class="btn-o" onclick="shareProfile()">Share</button>
+          <button class="btn-o" onclick="showToast('More options')">···</button>
+        </div>
+        <div class="sec-header" style="padding-left:0;padding-right:0">
+          <span class="sec-title" style="font-size:14px">Posts</span>
+          <span class="sec-action">Grid</span>
+        </div>
+        <div class="pgrid">
+          <div class="pgrid-item" onclick="showToast('Post opened')">🎨</div>
+          <div class="pgrid-item" onclick="showToast('Post opened')">🌅</div>
+          <div class="pgrid-item" onclick="showToast('Post opened')">💻</div>
+          <div class="pgrid-item" onclick="showToast('Post opened')">🎵</div>
+          <div class="pgrid-item" onclick="showToast('Post opened')">🌿</div>
+          <div class="pgrid-item" onclick="showToast('Post opened')">🍜</div>
+          <div class="pgrid-item" onclick="showToast('Post opened')">📚</div>
+          <div class="pgrid-item" onclick="showToast('Post opened')">✈️</div>
+          <div class="pgrid-item" onclick="showToast('Post opened')">🏃</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════ TAB BAR ═══════════════════════════════ -->
+  <div class="tab-bar">
+    <div class="tab-item active" id="t-feed" onclick="switchTab('feed')">
+      <div class="tab-icon">🏠</div>
+      <div class="tab-label">Feed</div>
+    </div>
+    <div class="tab-item" id="t-messages" onclick="switchTab('messages')">
+      <div class="tab-icon">💬<div class="notif-dot"></div></div>
+      <div class="tab-label">Messages</div>
+    </div>
+    <div class="tab-item" id="t-groups" onclick="switchTab('groups')">
+      <div class="tab-icon">👥</div>
+      <div class="tab-label">Groups</div>
+    </div>
+    <div class="tab-item" id="t-profile" onclick="switchTab('profile')">
+      <div class="tab-icon">😊</div>
+      <div class="tab-label">Profile</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// Tab switching
+function switchTab(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+  document.getElementById('s-' + name).classList.add('active');
+  document.getElementById('t-' + name).classList.add('active');
+  document.querySelectorAll('.fab').forEach(f => f.classList.add('hidden'));
+  if (name === 'feed') document.getElementById('fab-feed').classList.remove('hidden');
+  if (name === 'messages') document.getElementById('fab-msg').classList.remove('hidden');
+}
+
+// Like toggle
+function toggleLike(btn) {
+  const liked = btn.classList.toggle('liked');
+  const icon = btn.querySelector('.ai');
+  const cnt = btn.querySelector('.cnt');
+  const n = parseInt(cnt.textContent);
+  icon.textContent = liked ? '❤️' : '🤍';
+  cnt.textContent = liked ? n + 1 : n - 1;
+  showToast(liked ? 'Post liked!' : 'Like removed');
+}
+
+// Feed pill filter
+function setPill(el) {
+  el.closest('.pill-row').querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// Group join/leave
+function toggleJoin(btn) {
+  const joined = btn.classList.toggle('joined');
+  btn.textContent = joined ? '✓ Joined' : '+ Join';
+  showToast(joined ? 'Joined group!' : 'Left group');
+}
+
+// Add friend
+function addFriend(btn) {
+  if (btn.classList.contains('added')) return;
+  btn.textContent = '✓ Added';
+  btn.classList.add('added');
+  showToast('Friend request sent!');
+}
+
+// Share profile
+function shareProfile() {
+  if (navigator.share) {
+    navigator.share({ title: 'soc·ial — @yourhandle', url: location.href });
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(location.href);
+    showToast('Profile link copied!');
+  } else {
+    showToast('Profile link: ' + location.href);
+  }
+}
+
+// Toast notification
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
+}
+</script>
+</body>
+</html>
